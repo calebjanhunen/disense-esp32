@@ -6,4 +6,5 @@ void MyServerCallbacks::onConnect(BLEServer *pServer) {
 
 void MyServerCallbacks::onDisconnect(BLEServer *pServer) {
     this->deviceConnected = false;
+    pServer->startAdvertising();
 }
