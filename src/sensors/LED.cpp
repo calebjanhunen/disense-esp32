@@ -2,9 +2,6 @@
 
 LED::LED(byte pin) {
     this->pin = pin;
-}
-
-void LED::init() {
     pinMode(this->pin, OUTPUT);
 }
 

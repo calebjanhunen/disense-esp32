@@ -9,7 +9,6 @@ private:
 
 public:
     LED(byte pin);
-    void init();
     void turnOn();
     void turnOff();
 };
