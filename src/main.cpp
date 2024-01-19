@@ -35,10 +35,15 @@ void setup() {
 }
 
 void loop() {
+    float thermistorTemp = thermistor1->getCelciusValue();
+    Serial.print("Thermistor temp: ");
+    Serial.println(thermistorTemp);
+    Serial.println(" ");
     if (bleManager->getIsDeviceConnected()) {
         bleLed->turnOn();
         thermistorCharacteristic->setValue("Hello World");
         thermistorCharacteristic->notify();
+
         delay(1000);
     } else {
         bleLed->turnOff();
@@ -46,4 +51,5 @@ void loop() {
         bleLed->turnOn();
         delay(500);
     }
+    delay(1000);
 }

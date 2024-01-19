@@ -8,7 +8,7 @@ private:
     const float supplyVoltage = 3.3; // supply voltage from esp32
     byte pin;
     float fromVoltageToResistance(float voltage);
-    float fromResistanceToCelcius(float resistance); // TODO: Implement using steinhartt hart equation
+    float fromResistanceToCelsius(float resistance);
     int readFromADCPin();
     float fromADCReadingToVoltage(int adcVoltage);
 
