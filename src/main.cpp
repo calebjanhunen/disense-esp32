@@ -1,6 +1,7 @@
 #include "BLEManager.h"
 #include "BLEuuids.h"
 #include "LED.h"
+#include "SensorUuids.h"
 #include "thermistor.h"
 #include <Arduino.h>
 
@@ -21,7 +22,7 @@ void setup() {
     bleManager = new BLEManager("Disense");
 
     // Create sensor objects
-    thermistor1 = new Thermistor(33);
+    thermistor1 = new Thermistor(33, "thermistor1");
     bleLed = new LED(2);
 
     // Create characteristic objects for sensors (thermistor, force, spo2)
@@ -40,8 +41,10 @@ void loop() {
     Serial.println(thermistorTemp);
     Serial.println(" ");
     if (bleManager->getIsDeviceConnected()) {
+        String combinedData = "";
+        combinedData = String(thermistor1->getUuid()) + ":" + String(thermistorTemp);
         bleLed->turnOn();
-        thermistorCharacteristic->setValue("Hello World");
+        thermistorCharacteristic->setValue(combinedData.c_str());
         thermistorCharacteristic->notify();
 
         delay(1000);

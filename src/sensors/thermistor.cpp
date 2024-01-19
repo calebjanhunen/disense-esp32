@@ -1,7 +1,12 @@
 #include "thermistor.h"
 
-Thermistor::Thermistor(byte pin) {
+Thermistor::Thermistor(byte pin, const char *uuid) {
     this->pin = pin;
+    this->uuid = uuid;
+}
+
+const char *Thermistor::getUuid() {
+    return this->uuid;
 }
 
 /**
