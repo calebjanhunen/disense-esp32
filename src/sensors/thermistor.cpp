@@ -1,12 +1,12 @@
 #include "thermistor.h"
 
-Thermistor::Thermistor(byte pin, const char *uuid) {
+Thermistor::Thermistor(byte pin, const int id) {
     this->pin = pin;
-    this->uuid = uuid;
+    this->id = id;
 }
 
-const char *Thermistor::getUuid() {
-    return this->uuid;
+int Thermistor::getId() {
+    return this->id;
 }
 
 /**
@@ -15,16 +15,15 @@ const char *Thermistor::getUuid() {
  */
 float Thermistor::getCelciusValue() {
     int adcVoltage = this->readFromADCPin();
-    Serial.print("adc Voltage: ");
-    Serial.println(adcVoltage);
     float thermistorVoltage = this->fromADCReadingToVoltage(adcVoltage);
-    Serial.print("Voltage: ");
-    Serial.println(thermistorVoltage);
     float thermistorResistance = this->fromVoltageToResistance(thermistorVoltage);
-    Serial.print("Resistance: ");
-    Serial.println(thermistorResistance);
-    float celciusValue = this->fromResistanceToCelsius(thermistorResistance);
-    return celciusValue;
+    float celsiusValue = this->fromResistanceToCelsius(thermistorResistance);
+
+    // round to nearest 10th decimal place
+    celsiusValue = round(celsiusValue * 10) / 10;
+
+    this->tempVal = celsiusValue;
+    return this->tempVal;
 }
 
 /**
@@ -69,8 +68,6 @@ float Thermistor::fromResistanceToCelsius(float resistance) {
 
     // Get kelvin temp value
     float tempInKelvin = 1 / ((1 / T0) + ((1 / B) * log(resistance / R0)));
-    Serial.print("Kelvin temp: ");
-    Serial.println(tempInKelvin);
 
     // convert kelvin to celsius
     return tempInKelvin - 273.15;
