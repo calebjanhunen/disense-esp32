@@ -16,8 +16,10 @@ private:
 
 public:
     Thermistor(byte pin, int id);
-    float getCelciusValue();
+    float readTemperature();
+    float readFakeTemperature(); // For testing
     int getId();
+    float getTemp();
 };
 
 #endif

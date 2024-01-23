@@ -9,11 +9,15 @@ int Thermistor::getId() {
     return this->id;
 }
 
+float Thermistor::getTemp() {
+    return this->tempVal;
+}
+
 /**
  * @brief Reads voltage value from analog pin and converts it to a temperature value (in celcius).
  * @return The temperature of the thermistor in celcius.
  */
-float Thermistor::getCelciusValue() {
+float Thermistor::readTemperature() {
     int adcVoltage = this->readFromADCPin();
     float thermistorVoltage = this->fromADCReadingToVoltage(adcVoltage);
     float thermistorResistance = this->fromVoltageToResistance(thermistorVoltage);
@@ -24,6 +28,13 @@ float Thermistor::getCelciusValue() {
 
     this->tempVal = celsiusValue;
     return this->tempVal;
+}
+
+// For testing, TODO: Remove
+float Thermistor::readFakeTemperature() {
+    float val = random(150, 400) / 10.0;
+    this->tempVal = val;
+    return val;
 }
 
 /**
