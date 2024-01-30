@@ -19,9 +19,16 @@ float Thermistor::getTemp() {
  */
 float Thermistor::readTemperature() {
     int adcVoltage = this->readFromADCPin();
+    Serial.print("adc: ");
+    Serial.println(adcVoltage);
     float thermistorVoltage = this->fromADCReadingToVoltage(adcVoltage);
     float thermistorResistance = this->fromVoltageToResistance(thermistorVoltage);
+    // float thermistorResistance = 10000.0 / (4095 / adcVoltage - 1);
+    // Serial.print("Resistance: ");
+    // Serial.println(thermistorResistance);
     float celsiusValue = this->fromResistanceToCelsius(thermistorResistance);
+
+    // https://learn.adafruit.com/thermistor/using-a-thermistor
 
     // round to nearest 10th decimal place
     celsiusValue = round(celsiusValue * 10) / 10;
@@ -52,7 +59,8 @@ int Thermistor::readFromADCPin() {
  */
 float Thermistor::fromADCReadingToVoltage(int adcVoltage) {
     int adcMaxVal = 4095; // For 12-bit ADC, max value is 4095
-    return (this->supplyVoltage / float(adcMaxVal)) * float(adcVoltage);
+    // return (this->supplyVoltage / float(adcMaxVal)) * float(adcVoltage);
+    return (float(adcVoltage) / float(adcMaxVal)) * this->supplyVoltage;
 }
 
 /**
@@ -63,7 +71,11 @@ float Thermistor::fromADCReadingToVoltage(int adcVoltage) {
 float Thermistor::fromVoltageToResistance(float voltage) {
     // Using voltage divider formula
     float r_fixed = 10000.0; // resistor used in voltage divider circuit
-    return r_fixed * voltage / (this->supplyVoltage - voltage);
+    float resistance = r_fixed * (voltage / (this->supplyVoltage - voltage));
+    // float resistance = r_fixed * (this->supplyVoltage / voltage - 1);
+    Serial.print("Resistance: ");
+    Serial.println(resistance);
+    return resistance;
 }
 
 /**
@@ -73,12 +85,13 @@ float Thermistor::fromVoltageToResistance(float voltage) {
  */
 float Thermistor::fromResistanceToCelsius(float resistance) {
     // Using steinhart-hart equation
-    float T0 = 298.15; // reference temperature in Kelvin (25C = 298.15K)
-    float B = 3950;    // b parameter found in datasheet of thermistor
-    float R0 = 10000;  // thermistor resistance at T0 (usually 10k ohms)
+    // float T0 = 298.15; // reference temperature in Kelvin (25C = 298.15K)
+    // float B = 3950;    // b parameter found in datasheet of thermistor
+    // float R0 = 10000;  // thermistor resistance at T0 (usually 10k ohms)
 
     // Get kelvin temp value
-    float tempInKelvin = 1 / ((1 / T0) + ((1 / B) * log(resistance / R0)));
+    // float tempInKelvin = 1 / ((1 / T0) + ((1 / B) * log(resistance / R0)));
+    float tempInKelvin = 1 / (0.001417214376 + 0.0001863455008 * log(resistance) + (0.0000003447468826 * pow(log(resistance), 3)));
 
     // convert kelvin to celsius
     return tempInKelvin - 273.15;

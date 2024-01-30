@@ -5,7 +5,7 @@
 #include "thermistor.h"
 #include <Arduino.h>
 
-#define NUM_THERMISTORS 4
+#define NUM_THERMISTORS 1
 #define BYTES_PER_SENSOR 5 // For byte array (1 byte for sensor id, 4 bytes for temp value)
 
 // Thermistors
@@ -21,7 +21,6 @@ BLEManager *bleManager;
 BLECharacteristic *thermistorCharacteristic;
 BLECharacteristic *forceSensorCharacteristic;
 BLECharacteristic *spo2Characteristic;
-BLECharacteristic *testCharacteristic;
 
 // thermistor byte array
 uint8_t thermistorByteArr[NUM_THERMISTORS * BYTES_PER_SENSOR]; // 4 bytes per sensor (1 for id, 4 for temperature value)
@@ -36,20 +35,22 @@ void setup() {
 
     // Create thermistor objects
     thermistorArr[0] = new Thermistor(33, METATARSAL_1_THERMISTOR_ID);
-    thermistorArr[1] = new Thermistor(34, METATARSAL_5_THERMISTOR_ID);
-    thermistorArr[2] = new Thermistor(35, HALLUX_THERMISTOR_ID);
-    thermistorArr[3] = new Thermistor(36, CALCANEUS_THERMISTOR_ID);
+    // thermistorArr[1] = new Thermistor(34, METATARSAL_5_THERMISTOR_ID);
+    // thermistorArr[2] = new Thermistor(35, HALLUX_THERMISTOR_ID);
+    // thermistorArr[3] = new Thermistor(36, CALCANEUS_THERMISTOR_ID);
 
     // Create LED objects
     bleLed = new LED(2);
 
     // Create characteristic objects for sensors (thermistor, force, spo2)
-    testCharacteristic = bleManager->createBLECharacteristicForNotify(TEST_CHARACTERISTIC_UUID);
     thermistorCharacteristic = bleManager->createBLECharacteristicForNotify(THERMISTORS_CHARACTERISTIC_UUID);
 
     // start service and advertising for BLE
     bleManager->startService();
     bleManager->startAdvertising();
+
+    // FSR
+    pinMode(32, INPUT);
 }
 
 void encodeThermistorToByteArray(Thermistor *thermistor, uint8_t *byteArr) {
@@ -80,19 +81,28 @@ void readAndEncodeThermistorData() {
 }
 
 void loop() {
-    // Serial.print("thermistor temp: ");
-    // Serial.println(thermistorTemp);
-    // encodeThermistorToByteArray(thermistor1, thermistorByteArr);
+    // int fsrADC = analogRead(32);
+    // float voltage = ((float(fsrADC) * 3.3) / 4095);
+    // float reistance = ((1000.0 * 3.3) / voltage) - 1000.0;
+    // Serial.print("FSR adc: ");
+    // Serial.println(fsrADC);
+    // Serial.print("FSR resistance: ");
+    // Serial.println(reistance);
 
-    if (bleManager->getIsDeviceConnected()) {
-        bleLed->turnOn();
-        readAndEncodeThermistorData();
-        thermistorCharacteristic->setValue(thermistorByteArr, sizeof(thermistorByteArr));
-        thermistorCharacteristic->notify();
-    } else {
-        bleLed->turnOff();
-        delay(1000);
-        bleLed->turnOn();
-    }
-    delay(1000);
+    float temp = thermistorArr[0]->readTemperature();
+    Serial.print("thermistor temp: ");
+    Serial.println(temp);
+
+    // if (bleManager->getIsDeviceConnected()) {
+    //     bleLed->turnOn();
+    //     // readAndEncodeThermistorData();
+    //     thermistorCharacteristic->setValue(thermistorByteArr, sizeof(thermistorByteArr));
+    //     thermistorCharacteristic->notify();
+    // } else {
+    //     bleLed->turnOff();
+    //     delay(10);
+    //     bleLed->turnOn();
+    //     delay(10);
+    // }
+    delay(2000);
 }
