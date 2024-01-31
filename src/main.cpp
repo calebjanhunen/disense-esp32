@@ -1,17 +1,17 @@
 #include "BLEManager.h"
 #include "BLEuuids.h"
+#include "FSR.h"
 #include "LED.h"
 #include "SensorIDs.h"
 #include "thermistor.h"
 #include <Arduino.h>
 
 #define NUM_THERMISTORS 1
+#define NUM_FSR 1
 #define BYTES_PER_SENSOR 5 // For byte array (1 byte for sensor id, 4 bytes for temp value)
 
-// Thermistors
-Thermistor *thermistor1;
-Thermistor *testThermistor;
 Thermistor *thermistorArr[NUM_THERMISTORS];
+FSR *fsr[NUM_FSR];
 
 // LEDs
 LED *bleLed;
@@ -38,6 +38,9 @@ void setup() {
     // thermistorArr[1] = new Thermistor(34, METATARSAL_5_THERMISTOR_ID);
     // thermistorArr[2] = new Thermistor(35, HALLUX_THERMISTOR_ID);
     // thermistorArr[3] = new Thermistor(36, CALCANEUS_THERMISTOR_ID);
+
+    // Create FSR objects
+    fsr[0] = new FSR(32, FSR_ID);
 
     // Create LED objects
     bleLed = new LED(2);
@@ -81,17 +84,11 @@ void readAndEncodeThermistorData() {
 }
 
 void loop() {
-    // int fsrADC = analogRead(32);
-    // float voltage = ((float(fsrADC) * 3.3) / 4095);
-    // float reistance = ((1000.0 * 3.3) / voltage) - 1000.0;
-    // Serial.print("FSR adc: ");
-    // Serial.println(fsrADC);
-    // Serial.print("FSR resistance: ");
-    // Serial.println(reistance);
+    fsr[0]->readPressure();
 
-    float temp = thermistorArr[0]->readTemperature();
-    Serial.print("thermistor temp: ");
-    Serial.println(temp);
+    // float temp = thermistorArr[0]->readTemperature();
+    // Serial.print("thermistor temp: ");
+    // Serial.println(temp);
 
     // if (bleManager->getIsDeviceConnected()) {
     //     bleLed->turnOn();
@@ -104,5 +101,5 @@ void loop() {
     //     bleLed->turnOn();
     //     delay(10);
     // }
-    delay(2000);
+    delay(100);
 }
