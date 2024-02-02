@@ -60,26 +60,6 @@ void setup() {
     // start service and advertising for BLE
     bleManager->startService();
     bleManager->startAdvertising();
-
-    Wire.begin();
-    int result = bioHub.begin(Wire, resPin, mfioPin);
-    if (result == 0) // Zero errors!
-        Serial.println("Sensor started!");
-    else
-        Serial.println("Could not communicate with the sensor!");
-
-    Serial.println("Configuring Sensor....");
-    int error = bioHub.configBpm(MODE_ONE); // Configuring just the BPM settings.
-    if (error == 0) {                       // Zero errors!
-        Serial.println("Sensor configured.");
-    } else {
-        Serial.println("Error configuring sensor.");
-        Serial.print("Error: ");
-        Serial.println(error);
-    }
-
-    Serial.println("Loading up the buffer with data....");
-    delay(4000);
 }
 
 void encodeThermistorToByteArray(Thermistor *thermistor, uint8_t *byteArr) {
@@ -110,17 +90,7 @@ void readAndEncodeThermistorData() {
 }
 
 void loop() {
-    // fsr[0]->readPressure();
-
-    body = bioHub.readBpm();
-    Serial.print("Heartrate: ");
-    Serial.println(body.heartRate);
-    Serial.print("Confidence: ");
-    Serial.println(body.confidence);
-    Serial.print("Oxygen: ");
-    Serial.println(body.oxygen);
-    Serial.print("Status: ");
-    Serial.println(body.status);
+    fsr[0]->readPressure();
 
     // float temp = thermistorArr[0]->readTemperature();
     // Serial.print("thermistor temp: ");
@@ -139,3 +109,37 @@ void loop() {
     // }
     delay(250);
 }
+
+// SPO2
+/**
+ *  Wire.begin();
+    int result = bioHub.begin(Wire, resPin, mfioPin);
+    if (result == 0) // Zero errors!
+        Serial.println("Sensor started!");
+    else
+        Serial.println("Could not communicate with the sensor!");
+
+    Serial.println("Configuring Sensor....");
+    int error = bioHub.configBpm(MODE_ONE); // Configuring just the BPM settings.
+    if (error == 0) {                       // Zero errors!
+        Serial.println("Sensor configured.");
+    } else {
+        Serial.println("Error configuring sensor.");
+        Serial.print("Error: ");
+        Serial.println(error);
+    }
+
+    Serial.println("Loading up the buffer with data....");
+    delay(4000);
+ *
+ *
+ *  body = bioHub.readBpm();
+    Serial.print("Heartrate: ");
+    Serial.println(body.heartRate);
+    Serial.print("Confidence: ");
+    Serial.println(body.confidence);
+    Serial.print("Oxygen: ");
+    Serial.println(body.oxygen);
+    Serial.print("Status: ");
+    Serial.println(body.status);
+*/
