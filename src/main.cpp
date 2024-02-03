@@ -90,11 +90,9 @@ void readAndEncodeThermistorData() {
 }
 
 void loop() {
-    fsr[0]->readPressure();
-
-    // float temp = thermistorArr[0]->readTemperature();
-    // Serial.print("thermistor temp: ");
-    // Serial.println(temp);
+    float temp = thermistorArr[0]->readTemperature();
+    Serial.print("thermistor temp: ");
+    Serial.println(temp);
 
     // if (bleManager->getIsDeviceConnected()) {
     //     bleLed->turnOn();

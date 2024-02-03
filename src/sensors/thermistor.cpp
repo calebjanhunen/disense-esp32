@@ -1,5 +1,7 @@
 #include "thermistor.h"
 
+// Connection steps: https://learn.adafruit.com/thermistor/using-a-thermistor
+
 Thermistor::Thermistor(byte pin, const int id) {
     this->pin = pin;
     this->id = id;
@@ -26,7 +28,7 @@ float Thermistor::readTemperature() {
     // float thermistorResistance = 10000.0 / (4095 / adcVoltage - 1);
     // Serial.print("Resistance: ");
     // Serial.println(thermistorResistance);
-    float celsiusValue = this->fromResistanceToCelsius(thermistorResistance);
+    float celsiusValue = this->fromResistanceToCelsiusUsingLookupTable(thermistorResistance);
 
     // https://learn.adafruit.com/thermistor/using-a-thermistor
 
@@ -59,7 +61,6 @@ int Thermistor::readFromADCPin() {
  */
 float Thermistor::fromADCReadingToVoltage(int adcVoltage) {
     int adcMaxVal = 4095; // For 12-bit ADC, max value is 4095
-    // return (this->supplyVoltage / float(adcMaxVal)) * float(adcVoltage);
     return (float(adcVoltage) / float(adcMaxVal)) * this->supplyVoltage;
 }
 
@@ -72,9 +73,8 @@ float Thermistor::fromVoltageToResistance(float voltage) {
     // Using voltage divider formula
     float r_fixed = 10000.0; // resistor used in voltage divider circuit
     float resistance = r_fixed * (voltage / (this->supplyVoltage - voltage));
-    // float resistance = r_fixed * (this->supplyVoltage / voltage - 1);
-    Serial.print("Resistance: ");
-    Serial.println(resistance);
+    // Serial.print("Resistance: ");
+    // Serial.println(resistance);
     return resistance;
 }
 
@@ -85,9 +85,9 @@ float Thermistor::fromVoltageToResistance(float voltage) {
  */
 float Thermistor::fromResistanceToCelsius(float resistance) {
     // Using steinhart-hart equation
-    // float T0 = 298.15; // reference temperature in Kelvin (25C = 298.15K)
-    // float B = 3950;    // b parameter found in datasheet of thermistor
-    // float R0 = 10000;  // thermistor resistance at T0 (usually 10k ohms)
+    float T0 = 298.15; // reference temperature in Kelvin (25C = 298.15K)
+    float B = 3950;    // b parameter found in datasheet of thermistor
+    float R0 = 10000;  // thermistor resistance at T0 (usually 10k ohms)
 
     // Get kelvin temp value
     // float tempInKelvin = 1 / ((1 / T0) + ((1 / B) * log(resistance / R0)));
@@ -95,4 +95,62 @@ float Thermistor::fromResistanceToCelsius(float resistance) {
 
     // convert kelvin to celsius
     return tempInKelvin - 273.15;
+}
+
+/**
+ * @brief Gets temperature from lookup table using the resistance value
+ * @param [in] resistance - The restiance of the thermistor
+ * @return The temperature in celsius.
+ */
+float Thermistor::fromResistanceToCelsiusUsingLookupTable(float resistance) {
+    int leftIndex = 0;
+    int rightIndex = lookupTableSize - 1;
+    float temp = 123.123;
+    resistance = resistance / 1000.00; // convert Ohm to kOhm;
+    Serial.print("resistance in kOhm: ");
+    Serial.println(resistance);
+
+    // Using binary search
+    while (leftIndex <= rightIndex) {
+        int m = leftIndex + (rightIndex - leftIndex) / 2; // middle index
+        if (resistance == thermistorLookupTable[m].res) {
+            return thermistorLookupTable[m].temp;
+        }
+
+        if (resistance < thermistorLookupTable[m].res) {
+            if (m == lookupTableSize - 1) { // reached end of array
+                return 9999.99;             // TODO: What to return if value is greater than last value in array?
+            }
+
+            if (resistance >= thermistorLookupTable[m + 1].res) {
+
+                return linearInterpolation(resistance, thermistorLookupTable[m], thermistorLookupTable[m + 1]);
+            } else {
+                leftIndex = m + 1;
+            }
+        } else if (resistance > thermistorLookupTable[m].res) {
+            if (m == 0) {        // reached beginning of array
+                return -9999.99; // TODO: What to return if value is less than first value in array?
+            }
+            if (resistance <= thermistorLookupTable[m - 1].res) {
+                return linearInterpolation(resistance, thermistorLookupTable[m], thermistorLookupTable[m - 1]);
+            } else {
+                rightIndex = m - 1;
+            }
+        }
+    }
+
+    return temp;
+}
+
+/**
+ * @brief Does linear interpolation to get a more accurate temperature value
+ * @param [in] resistance - The restiance of the thermistor
+ * @param [in] entry1 - entry from thermistorLookupTable (x0, y0)
+ * @param [in] entry2 - entry from thermistorLookupTable (x1, y1)
+ * @return The temperature using linear interpolation
+ */
+float Thermistor::linearInterpolation(float resistance, ThermistorTableEntry entry1, ThermistorTableEntry entry2) {
+    float temp = entry1.temp + (resistance - entry1.res) * ((entry2.temp - entry1.temp) / (entry2.res - entry1.res));
+    return temp;
 }

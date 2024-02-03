@@ -1,6 +1,7 @@
 #ifndef thermistor_h
 #define thermistor_h
 
+#include "thermistor-lookup-table.h"
 #include <Arduino.h>
 
 class Thermistor {
@@ -13,6 +14,8 @@ private:
     float fromResistanceToCelsius(float resistance);
     int readFromADCPin();
     float fromADCReadingToVoltage(int adcVoltage);
+    float fromResistanceToCelsiusUsingLookupTable(float resistance);
+    float linearInterpolation(float resistance, ThermistorTableEntry entry1, ThermistorTableEntry entry2);
 
 public:
     Thermistor(byte pin, int id);

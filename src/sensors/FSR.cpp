@@ -1,5 +1,10 @@
 #include "FSR.h"
 
+/**
+ * Connection steps:
+ *  https://www.geeksforgeeks.org/force-sensitive-resistor-fsr-with-arduino/
+ */
+
 FSR::FSR(byte pin, int id) {
     this->pin = pin;
     this->id = id;
