@@ -21,16 +21,9 @@ float Thermistor::getTemp() {
  */
 float Thermistor::readTemperature() {
     int adcVoltage = this->readFromADCPin();
-    Serial.print("adc: ");
-    Serial.println(adcVoltage);
     float thermistorVoltage = this->fromADCReadingToVoltage(adcVoltage);
     float thermistorResistance = this->fromVoltageToResistance(thermistorVoltage);
-    // float thermistorResistance = 10000.0 / (4095 / adcVoltage - 1);
-    // Serial.print("Resistance: ");
-    // Serial.println(thermistorResistance);
     float celsiusValue = this->fromResistanceToCelsiusUsingLookupTable(thermistorResistance);
-
-    // https://learn.adafruit.com/thermistor/using-a-thermistor
 
     // round to nearest 10th decimal place
     celsiusValue = round(celsiusValue * 10) / 10;
@@ -73,8 +66,6 @@ float Thermistor::fromVoltageToResistance(float voltage) {
     // Using voltage divider formula
     float r_fixed = 10000.0; // resistor used in voltage divider circuit
     float resistance = r_fixed * (voltage / (this->supplyVoltage - voltage));
-    // Serial.print("Resistance: ");
-    // Serial.println(resistance);
     return resistance;
 }
 
@@ -105,7 +96,6 @@ float Thermistor::fromResistanceToCelsius(float resistance) {
 float Thermistor::fromResistanceToCelsiusUsingLookupTable(float resistance) {
     int leftIndex = 0;
     int rightIndex = lookupTableSize - 1;
-    float temp = 123.123;
     resistance = resistance / 1000.00; // convert Ohm to kOhm;
     Serial.print("resistance in kOhm: ");
     Serial.println(resistance);
@@ -140,7 +130,7 @@ float Thermistor::fromResistanceToCelsiusUsingLookupTable(float resistance) {
         }
     }
 
-    return temp;
+    return 99999;
 }
 
 /**

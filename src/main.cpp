@@ -7,7 +7,7 @@
 #include <Arduino.h>
 #include <SparkFun_Bio_Sensor_Hub_Library.h>
 
-#define NUM_THERMISTORS 1
+#define NUM_THERMISTORS 3
 #define NUM_FSR 1
 #define BYTES_PER_SENSOR 5 // For byte array (1 byte for sensor id, 4 bytes for temp value)
 
@@ -43,10 +43,9 @@ void setup() {
     bleManager = new BLEManager("Disense");
 
     // Create thermistor objects
-    thermistorArr[0] = new Thermistor(33, METATARSAL_1_THERMISTOR_ID);
-    // thermistorArr[1] = new Thermistor(34, METATARSAL_5_THERMISTOR_ID);
-    // thermistorArr[2] = new Thermistor(35, HALLUX_THERMISTOR_ID);
-    // thermistorArr[3] = new Thermistor(36, CALCANEUS_THERMISTOR_ID);
+    thermistorArr[0] = new Thermistor(13, METATARSAL_1_THERMISTOR_ID);
+    thermistorArr[1] = new Thermistor(14, METATARSAL_5_THERMISTOR_ID);
+    thermistorArr[2] = new Thermistor(33, HALLUX_THERMISTOR_ID);
 
     // Create FSR objects
     fsr[0] = new FSR(32, FSR_ID);
@@ -74,26 +73,19 @@ void encodeThermistorToByteArray(Thermistor *thermistor, uint8_t *byteArr) {
 void readAndEncodeThermistorData() {
     int byteArrIndex = 0;
     for (int i = 0; i < NUM_THERMISTORS; i++) {
-        if (i == 0) {
-            thermistorArr[i]->readTemperature();
-        } else {
-            thermistorArr[i]->readFakeTemperature();
-        }
-        Serial.print("thermistor temp: ");
-        Serial.print(i);
-        Serial.print(", ");
+        thermistorArr[i]->readTemperature();
+        Serial.print("thermistor temp ");
+        Serial.print(thermistorArr[i]->getId());
+        Serial.print(": ");
         Serial.println(thermistorArr[i]->getTemp());
-        encodeThermistorToByteArray(thermistorArr[i], &thermistorByteArr[byteArrIndex]);
-        byteArrIndex += BYTES_PER_SENSOR;
+        // encodeThermistorToByteArray(thermistorArr[i], &thermistorByteArr[byteArrIndex]);
+        // byteArrIndex += BYTES_PER_SENSOR;
     }
     Serial.println(" ");
 }
 
 void loop() {
-    float temp = thermistorArr[0]->readTemperature();
-    Serial.print("thermistor temp: ");
-    Serial.println(temp);
-
+    readAndEncodeThermistorData();
     // if (bleManager->getIsDeviceConnected()) {
     //     bleLed->turnOn();
     //     // readAndEncodeThermistorData();
