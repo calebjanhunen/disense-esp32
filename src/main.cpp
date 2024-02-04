@@ -48,7 +48,7 @@ void setup() {
     thermistorArr[2] = new Thermistor(33, HALLUX_THERMISTOR_ID);
 
     // Create FSR objects
-    fsr[0] = new FSR(32, FSR_ID);
+    fsr[0] = new FSR(34, FSR_ID);
 
     // Create LED objects
     bleLed = new LED(2);
@@ -86,6 +86,8 @@ void readAndEncodeThermistorData() {
 
 void loop() {
     readAndEncodeThermistorData();
+    fsr[0]->readPressure();
+
     // if (bleManager->getIsDeviceConnected()) {
     //     bleLed->turnOn();
     //     // readAndEncodeThermistorData();
