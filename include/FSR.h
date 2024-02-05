@@ -8,7 +8,8 @@ private:
     byte pin;
     int id;
     float fromVoltageToNewtonsUsing20KResistor(float voltage);
-    float fromVoltageToNewtonsUsing10KResistor(float voltage);
+    float fromResistanceToNewtonsUsing10kResistor(float resistance);
+    float fromResistanceToNewtonsUsing1kResistor(float resistance);
 
 public:
     FSR(byte pin, int id);

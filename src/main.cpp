@@ -85,7 +85,7 @@ void readAndEncodeThermistorData() {
 }
 
 void loop() {
-    readAndEncodeThermistorData();
+    // readAndEncodeThermistorData();
     fsr[0]->readPressure();
 
     // if (bleManager->getIsDeviceConnected()) {
