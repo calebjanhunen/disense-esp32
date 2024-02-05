@@ -3,24 +3,20 @@
 #include "FSR.h"
 #include "LED.h"
 #include "SensorIDs.h"
+#include "spo2.h"
 #include "thermistor.h"
 #include <Arduino.h>
 #include <SparkFun_Bio_Sensor_Hub_Library.h>
+#include <Wire.h>
 
 #define NUM_THERMISTORS 3
 #define NUM_FSR 1
 #define BYTES_PER_SENSOR 5 // For byte array (1 byte for sensor id, 4 bytes for temp value)
 
+// Sensors
 Thermistor *thermistorArr[NUM_THERMISTORS];
 FSR *fsr[NUM_FSR];
-
-int resPin = 4;
-int mfioPin = 13;
-
-// Takes address, reset pin, and MFIO pin.
-SparkFun_Bio_Sensor_Hub bioHub;
-
-bioData body;
+SPO2 *spo2;
 
 // LEDs
 LED *bleLed;
@@ -34,9 +30,11 @@ BLECharacteristic *spo2Characteristic;
 // thermistor byte array
 uint8_t thermistorByteArr[NUM_THERMISTORS * BYTES_PER_SENSOR]; // 4 bytes per sensor (1 for id, 4 for temperature value)
 
-float val;
+SparkFun_Bio_Sensor_Hub bioHub;
+bioData body;
 
 void setup() {
+    Wire.begin();
     Serial.begin(115200);
 
     // Create BLE manager object
@@ -50,15 +48,18 @@ void setup() {
     // Create FSR objects
     fsr[0] = new FSR(34, FSR_ID);
 
+    // Create SPO2 objects
+    spo2 = new SPO2(4, 5);
+
     // Create LED objects
     bleLed = new LED(2);
 
     // Create characteristic objects for sensors (thermistor, force, spo2)
     thermistorCharacteristic = bleManager->createBLECharacteristicForNotify(THERMISTORS_CHARACTERISTIC_UUID);
 
-    // start service and advertising for BLE
     bleManager->startService();
     bleManager->startAdvertising();
+    spo2->init(Wire);
 }
 
 void encodeThermistorToByteArray(Thermistor *thermistor, uint8_t *byteArr) {
@@ -86,7 +87,8 @@ void readAndEncodeThermistorData() {
 
 void loop() {
     // readAndEncodeThermistorData();
-    fsr[0]->readPressure();
+    // fsr[0]->readPressure();
+    spo2->readSensor();
 
     // if (bleManager->getIsDeviceConnected()) {
     //     bleLed->turnOn();
@@ -101,37 +103,3 @@ void loop() {
     // }
     delay(250);
 }
-
-// SPO2
-/**
- *  Wire.begin();
-    int result = bioHub.begin(Wire, resPin, mfioPin);
-    if (result == 0) // Zero errors!
-        Serial.println("Sensor started!");
-    else
-        Serial.println("Could not communicate with the sensor!");
-
-    Serial.println("Configuring Sensor....");
-    int error = bioHub.configBpm(MODE_ONE); // Configuring just the BPM settings.
-    if (error == 0) {                       // Zero errors!
-        Serial.println("Sensor configured.");
-    } else {
-        Serial.println("Error configuring sensor.");
-        Serial.print("Error: ");
-        Serial.println(error);
-    }
-
-    Serial.println("Loading up the buffer with data....");
-    delay(4000);
- *
- *
- *  body = bioHub.readBpm();
-    Serial.print("Heartrate: ");
-    Serial.println(body.heartRate);
-    Serial.print("Confidence: ");
-    Serial.println(body.confidence);
-    Serial.print("Oxygen: ");
-    Serial.println(body.oxygen);
-    Serial.print("Status: ");
-    Serial.println(body.status);
-*/

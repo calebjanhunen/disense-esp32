@@ -1,0 +1,22 @@
+#ifndef SPO2_H
+#define SPO2_H
+
+#include <Arduino.h>
+#include <SparkFun_Bio_Sensor_Hub_Library.h>
+
+class SPO2 {
+private:
+    SparkFun_Bio_Sensor_Hub bioHub;
+    bioData body;
+    int resPin;
+    int mfioPin;
+    void startSensor(TwoWire &wirePort);
+    void configureSensor();
+
+public:
+    SPO2(int reset, int mfio);
+    void init(TwoWire &wire);
+    void readSensor();
+};
+
+#endif

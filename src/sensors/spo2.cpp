@@ -1,0 +1,77 @@
+#include "spo2.h"
+
+SPO2::SPO2(int reset, int mfio) {
+    this->mfioPin = mfio;
+    this->resPin = reset;
+}
+
+void SPO2::init(TwoWire &wire) {
+    this->startSensor(wire);
+    this->configureSensor();
+
+    // Possible widths: 69, 118, 215, 411us
+    int width = 411;
+    // Possible samples: 50, 100, 200, 400, 800, 1000, 1600, 3200 samples/second
+    // Not every sample amount is possible with every width; check out our hookup
+    // guide for more information.
+    int samples = 400;
+    int pulseWidthVal;
+    int sampleVal;
+
+    // Set pulse width.
+    // Higher pulse width = longer light emission duration
+    // light can penetrate deeper into the skin
+    int error = bioHub.setPulseWidth(width);
+    if (error == 0) { // Zero errors.
+        Serial.println("Pulse Width Set.");
+    } else {
+        Serial.println("Could not set Pulse Width.");
+        Serial.print("Error: ");
+        Serial.println(error);
+    }
+
+    // Check that the pulse width was set.
+    pulseWidthVal = bioHub.readPulseWidth();
+    Serial.print("Pulse Width: ");
+    Serial.println(pulseWidthVal);
+
+    Serial.println("Loading up the buffer with data....");
+    delay(4000);
+}
+
+void SPO2::readSensor() {
+    this->body = bioHub.readBpm();
+    Serial.print("Heartrate: ");
+    Serial.println(body.heartRate);
+    Serial.print("Confidence: ");
+    Serial.println(body.confidence);
+    Serial.print("Oxygen: ");
+    Serial.println(body.oxygen);
+    Serial.print("Status: ");
+    Serial.println(body.status);
+}
+
+/*PRIVATE METHODS*/
+
+void SPO2::startSensor(TwoWire &wire) {
+    int result = this->bioHub.begin(wire, this->resPin, this->mfioPin);
+    if (result == 0) { // Zero errors!
+        Serial.println("Sensor started!");
+    } else {
+        Serial.print("Could not communicate with the sensor: ");
+        Serial.println(result);
+    }
+}
+
+void SPO2::configureSensor() {
+    Serial.println("Configuring Sensor....");
+    int error = this->bioHub.configBpm(MODE_ONE); // Configuring just the BPM settings.
+
+    if (error == 0) { // Zero errors!
+        Serial.println("Sensor configured.");
+    } else {
+        Serial.println("Error configuring sensor.");
+        Serial.print("Error: ");
+        Serial.println(error);
+    }
+}
