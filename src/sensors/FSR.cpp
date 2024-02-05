@@ -8,6 +8,7 @@
 FSR::FSR(byte pin, int id) {
     this->pin = pin;
     this->id = id;
+    this->force = 0;
 }
 
 void FSR::readPressure() {
@@ -19,18 +20,16 @@ void FSR::readPressure() {
     float force = this->fromResistanceToNewtonsUsing1kResistor(resistance);
     float kPa = (force / 169.6) * 1000;
 
-    Serial.print("FSR adc: ");
-    Serial.println(fsrADC);
+    // Serial.print("FSR adc: ");
+    // Serial.println(fsrADC);
     Serial.print("FSR resistance: ");
     Serial.println(resistance);
-    Serial.print("FSR Voltage: ");
-    Serial.println(voltage);
+    // Serial.print("FSR Voltage: ");
+    // Serial.println(voltage);
     Serial.print("FSR force: ");
-    Serial.println(force);
-    Serial.print("FSR pressure (kPa): ");
-    Serial.println(kPa);
-    Serial.println(" ");
-    Serial.println(" ");
+    Serial.println(this->force);
+    // Serial.print("FSR pressure (kPa): ");
+    // Serial.println(kPa);
 }
 
 /**
@@ -71,5 +70,11 @@ float FSR::fromResistanceToNewtonsUsing10kResistor(float resistance) {
 }
 
 float FSR::fromResistanceToNewtonsUsing1kResistor(float resistance) {
-    return 7771.06 - 6435.79 * pow(resistance, 0.0127751);
+    if (resistance > 300000) {
+        this->force = 0;
+        return this->force;
+    }
+    float force = 7771.06 - 6435.79 * pow(resistance, 0.0127751);
+    this->force = force;
+    return this->force;
 }

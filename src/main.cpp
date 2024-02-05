@@ -10,7 +10,7 @@
 #include <Wire.h>
 
 #define NUM_THERMISTORS 3
-#define NUM_FSR 1
+#define NUM_FSR 2
 #define BYTES_PER_SENSOR 5 // For byte array (1 byte for sensor id, 4 bytes for temp value)
 
 // Sensors
@@ -46,7 +46,8 @@ void setup() {
     thermistorArr[2] = new Thermistor(33, HALLUX_THERMISTOR_ID);
 
     // Create FSR objects
-    fsr[0] = new FSR(34, FSR_ID);
+    fsr[0] = new FSR(32, METATARSAL_1_FSR_ID);
+    fsr[1] = new FSR(34, METATARSAL_2_FSR_ID);
 
     // Create SPO2 objects
     spo2 = new SPO2(4, 5);
@@ -85,10 +86,18 @@ void readAndEncodeThermistorData() {
     Serial.println(" ");
 }
 
+void readFSRData() {
+    for (int i = 0; i < NUM_FSR; i++) {
+        fsr[i]->readPressure();
+        Serial.println(" ");
+        Serial.println(" ");
+    }
+}
+
 void loop() {
-    // readAndEncodeThermistorData();
-    // fsr[0]->readPressure();
-    spo2->readSensor();
+    readAndEncodeThermistorData();
+    readFSRData();
+    // spo2->readSensor();
 
     // if (bleManager->getIsDeviceConnected()) {
     //     bleLed->turnOn();

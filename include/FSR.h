@@ -7,6 +7,7 @@ class FSR {
 private:
     byte pin;
     int id;
+    float force;
     float fromVoltageToNewtonsUsing20KResistor(float voltage);
     float fromResistanceToNewtonsUsing10kResistor(float resistance);
     float fromResistanceToNewtonsUsing1kResistor(float resistance);
