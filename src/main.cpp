@@ -6,7 +6,6 @@
 #include "spo2.h"
 #include "thermistor.h"
 #include <Arduino.h>
-#include <SparkFun_Bio_Sensor_Hub_Library.h>
 #include <Wire.h>
 
 #define NUM_THERMISTORS 3
@@ -15,7 +14,7 @@
 
 // Sensors
 Thermistor *thermistorArr[NUM_THERMISTORS];
-FSR *fsr[NUM_FSR];
+FSR *fsrArr[NUM_FSR];
 SPO2 *spo2;
 
 // LEDs
@@ -30,8 +29,8 @@ BLECharacteristic *spo2Characteristic;
 // thermistor byte array
 uint8_t thermistorByteArr[NUM_THERMISTORS * BYTES_PER_SENSOR]; // 4 bytes per sensor (1 for id, 4 for temperature value)
 
-SparkFun_Bio_Sensor_Hub bioHub;
-bioData body;
+const long bleTransmissionInterval = 2000; // Interval for sending data over BLE (2 seconds)
+unsigned long prevMillis = 0;              // Stores last time ble tranmission was executed
 
 void setup() {
     Wire.begin();
@@ -46,8 +45,8 @@ void setup() {
     thermistorArr[2] = new Thermistor(33, HALLUX_THERMISTOR_ID);
 
     // Create FSR objects
-    fsr[0] = new FSR(32, METATARSAL_1_FSR_ID);
-    fsr[1] = new FSR(34, METATARSAL_2_FSR_ID);
+    fsrArr[0] = new FSR(32, METATARSAL_1_FSR_ID);
+    fsrArr[1] = new FSR(34, METATARSAL_2_FSR_ID);
 
     // Create SPO2 objects
     spo2 = new SPO2(4, 5);
@@ -60,43 +59,62 @@ void setup() {
 
     bleManager->startService();
     bleManager->startAdvertising();
-    spo2->init(Wire);
+    // spo2->init(Wire);
 }
 
-void encodeThermistorToByteArray(Thermistor *thermistor, uint8_t *byteArr) {
-    int tempVal = thermistor->getTemp() * 10; // multiply by 10 to move decimal to the right
-    byteArr[0] = thermistor->getId();
+void encodeThermistorToByteArray(float temp, int id, uint8_t *byteArr) {
+    int tempVal = temp * 10; // multiply by 10 to move decimal to the right
+    byteArr[0] = id;
     byteArr[1] = (tempVal >> 24) & 0xFF;
     byteArr[2] = (tempVal >> 16) & 0xFF;
     byteArr[3] = (tempVal >> 8) & 0xFF;
     byteArr[4] = (tempVal) & 0xFF;
 }
 
-void readAndEncodeThermistorData() {
+void encodeThermistorData() {
     int byteArrIndex = 0;
     for (int i = 0; i < NUM_THERMISTORS; i++) {
-        thermistorArr[i]->readTemperature();
+        float temp = thermistorArr[i]->getAverageTemp();
         Serial.print("thermistor temp ");
         Serial.print(thermistorArr[i]->getId());
         Serial.print(": ");
-        Serial.println(thermistorArr[i]->getTemp());
-        // encodeThermistorToByteArray(thermistorArr[i], &thermistorByteArr[byteArrIndex]);
-        // byteArrIndex += BYTES_PER_SENSOR;
+        Serial.println(temp);
+        encodeThermistorToByteArray(temp, thermistorArr[i]->getId(), &thermistorByteArr[byteArrIndex]);
+        byteArrIndex += BYTES_PER_SENSOR;
     }
     Serial.println(" ");
 }
 
-void readFSRData() {
+void encodeFSRData() {
+    int byteArrIndex = 0;
     for (int i = 0; i < NUM_FSR; i++) {
-        fsr[i]->readPressure();
-        Serial.println(" ");
-        Serial.println(" ");
+        fsrArr[i]->getAveragePressure();
+        Serial.print("FSR force ");
+        Serial.print(fsrArr[i]->getId());
+        Serial.print(": ");
+        Serial.println(fsrArr[i]->getAveragePressure());
     }
+    Serial.println(" ");
 }
 
 void loop() {
-    readAndEncodeThermistorData();
-    readFSRData();
+    // encodeThermistorData();
+    // readFSRData();
+    for (int i = 0; i < NUM_THERMISTORS; i++) {
+        thermistorArr[i]->readData();
+    }
+    for (int i = 0; i < NUM_FSR; i++) {
+        fsrArr[i]->readData();
+    }
+
+    unsigned long currMillis = millis();
+    if (currMillis - prevMillis >= 2000) {
+        prevMillis = currMillis;
+        encodeThermistorData();
+        encodeFSRData();
+        Serial.println(" ");
+        Serial.println(" ");
+    }
     // spo2->readSensor();
 
     // if (bleManager->getIsDeviceConnected()) {
@@ -110,5 +128,5 @@ void loop() {
     //     bleLed->turnOn();
     //     delay(10);
     // }
-    delay(250);
+    delay(20);
 }

@@ -9,20 +9,26 @@ private:
     const float supplyVoltage = 3.3; // supply voltage from esp32
     byte pin;
     int id;
-    float tempVal;
+    int totalADCValue;
+    int numReadings;
     float fromVoltageToResistance(float voltage);
     float fromResistanceToCelsius(float resistance);
-    int readFromADCPin();
-    float fromADCReadingToVoltage(int adcVoltage);
+    int readFromADC();
+    float fromADCReadingToVoltage(float adcVoltage);
     float fromResistanceToCelsiusUsingLookupTable(float resistance);
     float linearInterpolation(float resistance, ThermistorTableEntry entry1, ThermistorTableEntry entry2);
+
+    // New
+    float fromADCToTemp(float adcVal);
 
 public:
     Thermistor(byte pin, int id);
     float readTemperature();
-    float readFakeTemperature(); // For testing
     int getId();
-    float getTemp();
+
+    // NEW
+    void readData();
+    float getAverageTemp();
 };
 
 #endif

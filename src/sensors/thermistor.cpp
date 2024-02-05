@@ -5,14 +5,12 @@
 Thermistor::Thermistor(byte pin, const int id) {
     this->pin = pin;
     this->id = id;
+    this->totalADCValue = 0;
+    this->numReadings = 0;
 }
 
 int Thermistor::getId() {
     return this->id;
-}
-
-float Thermistor::getTemp() {
-    return this->tempVal;
 }
 
 /**
@@ -20,30 +18,24 @@ float Thermistor::getTemp() {
  * @return The temperature of the thermistor in celcius.
  */
 float Thermistor::readTemperature() {
-    int adcVoltage = this->readFromADCPin();
-    float thermistorVoltage = this->fromADCReadingToVoltage(adcVoltage);
+    int adcVoltage = this->readFromADC();
+    Serial.print("ADC val: ");
+    Serial.println(float(adcVoltage));
+    float thermistorVoltage = this->fromADCReadingToVoltage(float(adcVoltage));
     float thermistorResistance = this->fromVoltageToResistance(thermistorVoltage);
     float celsiusValue = this->fromResistanceToCelsiusUsingLookupTable(thermistorResistance);
 
     // round to nearest 10th decimal place
     celsiusValue = round(celsiusValue * 10) / 10;
 
-    this->tempVal = celsiusValue;
-    return this->tempVal;
-}
-
-// For testing, TODO: Remove
-float Thermistor::readFakeTemperature() {
-    float val = random(150, 400) / 10.0;
-    this->tempVal = val;
-    return val;
+    return celsiusValue;
 }
 
 /**
  * @brief Reads from ADC pin to get adc reading
  * @return The voltage reading as an ADC reading (0-4095).
  */
-int Thermistor::readFromADCPin() {
+int Thermistor::readFromADC() {
     return analogRead(this->pin);
 }
 
@@ -52,7 +44,7 @@ int Thermistor::readFromADCPin() {
  * @param [in] adcVoltage - The voltage value read from adc
  * @return The actual voltage value of the thermistor
  */
-float Thermistor::fromADCReadingToVoltage(int adcVoltage) {
+float Thermistor::fromADCReadingToVoltage(float adcVoltage) {
     int adcMaxVal = 4095; // For 12-bit ADC, max value is 4095
     return (float(adcVoltage) / float(adcMaxVal)) * this->supplyVoltage;
 }
@@ -97,8 +89,6 @@ float Thermistor::fromResistanceToCelsiusUsingLookupTable(float resistance) {
     int leftIndex = 0;
     int rightIndex = lookupTableSize - 1;
     resistance = resistance / 1000.00; // convert Ohm to kOhm;
-    Serial.print("resistance in kOhm: ");
-    Serial.println(resistance);
 
     // Using binary search
     while (leftIndex <= rightIndex) {
@@ -143,4 +133,26 @@ float Thermistor::fromResistanceToCelsiusUsingLookupTable(float resistance) {
 float Thermistor::linearInterpolation(float resistance, ThermistorTableEntry entry1, ThermistorTableEntry entry2) {
     float temp = entry1.temp + (resistance - entry1.res) * ((entry2.temp - entry1.temp) / (entry2.res - entry1.res));
     return temp;
+}
+
+void Thermistor::readData() {
+    this->totalADCValue += analogRead(this->pin);
+    this->numReadings++;
+}
+
+float Thermistor::getAverageTemp() {
+    float averageADCValue = this->totalADCValue / float(this->numReadings);
+    this->totalADCValue = 0;
+    this->numReadings = 0;
+    return this->fromADCToTemp(averageADCValue);
+}
+
+float Thermistor::fromADCToTemp(float adcVal) {
+    float thermistorVoltage = this->fromADCReadingToVoltage(adcVal);
+    float thermistorResistance = this->fromVoltageToResistance(thermistorVoltage);
+    float celsiusValue = this->fromResistanceToCelsiusUsingLookupTable(thermistorResistance);
+
+    // round to nearest 10th decimal place
+    celsiusValue = round(celsiusValue * 10) / 10;
+    return celsiusValue;
 }

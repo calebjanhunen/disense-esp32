@@ -11,7 +11,11 @@ FSR::FSR(byte pin, int id) {
     this->force = 0;
 }
 
-void FSR::readPressure() {
+int FSR::getId() {
+    return this->id;
+}
+
+void FSR::readInstantaneousPressure() {
     int fsrADC = analogRead(this->pin);
     float voltage = (float(fsrADC) / float(4095)) * 3.3;
     // float resistance = ((1000.0 * 3.3) / voltage) - 1000.0;
@@ -30,6 +34,29 @@ void FSR::readPressure() {
     Serial.println(this->force);
     // Serial.print("FSR pressure (kPa): ");
     // Serial.println(kPa);
+}
+
+void FSR::readData() {
+    this->totalADCValue += analogRead(this->pin);
+    this->numReadings++;
+}
+
+float FSR::getAveragePressure() {
+    float avgADCVal = float(this->totalADCValue) / float(this->numReadings);
+    this->totalADCValue = 0;
+    this->numReadings = 0;
+    float voltage = this->fromADCValToVoltage(avgADCVal);
+    float resistance = this->fromVoltageToResistance(voltage);
+    float force = this->fromResistanceToNewtonsUsing1kResistor(resistance);
+    return force;
+}
+
+float FSR::fromADCValToVoltage(float adcVal) {
+    return (float(adcVal) / float(4095)) * 3.3;
+}
+
+float FSR::fromVoltageToResistance(float voltage) {
+    return 1000.0 * ((3.3 - voltage) / voltage);
 }
 
 /**
