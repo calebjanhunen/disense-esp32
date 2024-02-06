@@ -5,8 +5,6 @@
 Thermistor::Thermistor(byte pin, const int id) {
     this->pin = pin;
     this->id = id;
-    this->totalADCValue = 0;
-    this->numReadings = 0;
 }
 
 int Thermistor::getId() {
@@ -133,26 +131,4 @@ float Thermistor::fromResistanceToCelsiusUsingLookupTable(float resistance) {
 float Thermistor::linearInterpolation(float resistance, ThermistorTableEntry entry1, ThermistorTableEntry entry2) {
     float temp = entry1.temp + (resistance - entry1.res) * ((entry2.temp - entry1.temp) / (entry2.res - entry1.res));
     return temp;
-}
-
-void Thermistor::readData() {
-    this->totalADCValue += analogRead(this->pin);
-    this->numReadings++;
-}
-
-float Thermistor::getAverageTemp() {
-    float averageADCValue = this->totalADCValue / float(this->numReadings);
-    this->totalADCValue = 0;
-    this->numReadings = 0;
-    return this->fromADCToTemp(averageADCValue);
-}
-
-float Thermistor::fromADCToTemp(float adcVal) {
-    float thermistorVoltage = this->fromADCReadingToVoltage(adcVal);
-    float thermistorResistance = this->fromVoltageToResistance(thermistorVoltage);
-    float celsiusValue = this->fromResistanceToCelsiusUsingLookupTable(thermistorResistance);
-
-    // round to nearest 10th decimal place
-    celsiusValue = round(celsiusValue * 10) / 10;
-    return celsiusValue;
 }

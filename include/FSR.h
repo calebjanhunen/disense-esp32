@@ -7,10 +7,6 @@ class FSR {
 private:
     byte pin;
     int id;
-    float force;
-    int totalADCValue;
-    int numReadings;
-    int id;
     float fromADCValToVoltage(float adcVal);
     float fromVoltageToResistance(float voltage);
     float fromVoltageToNewtonsUsing20KResistor(float voltage);
@@ -19,9 +15,7 @@ private:
 
 public:
     FSR(byte pin, int id);
-    void readInstantaneousPressure();
-    void readData();
-    float getAveragePressure();
+    float readForce();
     int getId();
 };
 

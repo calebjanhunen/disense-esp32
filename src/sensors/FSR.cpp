@@ -8,47 +8,24 @@
 FSR::FSR(byte pin, int id) {
     this->pin = pin;
     this->id = id;
-    this->force = 0;
 }
 
 int FSR::getId() {
     return this->id;
 }
 
-void FSR::readInstantaneousPressure() {
+float FSR::readForce() {
     int fsrADC = analogRead(this->pin);
-    float voltage = (float(fsrADC) / float(4095)) * 3.3;
-    // float resistance = ((1000.0 * 3.3) / voltage) - 1000.0;
-    float resistance = 1000.0 * ((3.3 - voltage) / voltage);
-    // float force = this->fromResistanceToNewtonsUsing10kResistor(resistance);
-    float force = this->fromResistanceToNewtonsUsing1kResistor(resistance);
-    float kPa = (force / 169.6) * 1000;
-
-    // Serial.print("FSR adc: ");
-    // Serial.println(fsrADC);
-    Serial.print("FSR resistance: ");
-    Serial.println(resistance);
-    // Serial.print("FSR Voltage: ");
-    // Serial.println(voltage);
-    Serial.print("FSR force: ");
-    Serial.println(this->force);
-    // Serial.print("FSR pressure (kPa): ");
-    // Serial.println(kPa);
-}
-
-void FSR::readData() {
-    this->totalADCValue += analogRead(this->pin);
-    this->numReadings++;
-}
-
-float FSR::getAveragePressure() {
-    float avgADCVal = float(this->totalADCValue) / float(this->numReadings);
-    this->totalADCValue = 0;
-    this->numReadings = 0;
-    float voltage = this->fromADCValToVoltage(avgADCVal);
+    float voltage = this->fromADCValToVoltage(fsrADC);
     float resistance = this->fromVoltageToResistance(voltage);
     float force = this->fromResistanceToNewtonsUsing1kResistor(resistance);
-    return force;
+
+    Serial.print("FSR resistance: ");
+    Serial.println(resistance);
+    Serial.print("FSR force: ");
+    Serial.println(force);
+
+    return round(force * 10) / 10;
 }
 
 float FSR::fromADCValToVoltage(float adcVal) {
@@ -98,10 +75,8 @@ float FSR::fromResistanceToNewtonsUsing10kResistor(float resistance) {
 
 float FSR::fromResistanceToNewtonsUsing1kResistor(float resistance) {
     if (resistance > 300000) {
-        this->force = 0;
-        return this->force;
+        return 0;
     }
     float force = 7771.06 - 6435.79 * pow(resistance, 0.0127751);
-    this->force = force;
-    return this->force;
+    return force;
 }
