@@ -1,8 +1,13 @@
 #include "spo2.h"
 
-SPO2::SPO2(int reset, int mfio) {
+SPO2::SPO2(int id, int reset, int mfio) {
     this->mfioPin = mfio;
     this->resPin = reset;
+    this->id = id;
+}
+
+int SPO2::getId() {
+    return this->id;
 }
 
 void SPO2::init(TwoWire &wire) {
@@ -39,16 +44,15 @@ void SPO2::init(TwoWire &wire) {
     delay(4000);
 }
 
-void SPO2::readSensor() {
+bioData SPO2::readSensor() {
     this->body = bioHub.readBpm();
-    Serial.print("Heartrate: ");
+    Serial.print("Heart Rate: ");
     Serial.println(body.heartRate);
-    Serial.print("Confidence: ");
-    Serial.println(body.confidence);
     Serial.print("Oxygen: ");
     Serial.println(body.oxygen);
     Serial.print("Status: ");
     Serial.println(body.status);
+    return body;
 }
 
 /*PRIVATE METHODS*/

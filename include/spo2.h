@@ -10,13 +10,15 @@ private:
     bioData body;
     int resPin;
     int mfioPin;
+    int id;
     void startSensor(TwoWire &wirePort);
     void configureSensor();
 
 public:
-    SPO2(int reset, int mfio);
+    SPO2(int id, int reset, int mfio);
     void init(TwoWire &wire);
-    void readSensor();
+    bioData readSensor();
+    int getId();
 };
 
 #endif

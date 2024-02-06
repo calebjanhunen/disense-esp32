@@ -5,3 +5,5 @@
 
 #define METATARSAL_1_FSR_ID 1
 #define METATARSAL_2_FSR_ID 2
+
+#define SPO2_ID 1
