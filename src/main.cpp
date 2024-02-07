@@ -9,7 +9,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#define NUM_THERMISTORS 3
+#define NUM_THERMISTORS 4
 #define NUM_FSR 4
 #define NUM_SPO2 1
 #define BYTES_PER_SENSOR 5 // For byte array (1 byte for sensor id, 4 bytes for temp value)
@@ -44,9 +44,10 @@ void setup() {
     bleManager = new BLEManager("Disense");
 
     // Create thermistor objects
-    thermistorArr[0] = new Thermistor(13, METATARSAL_1_THERMISTOR_ID);
-    thermistorArr[1] = new Thermistor(14, METATARSAL_5_THERMISTOR_ID);
-    thermistorArr[2] = new Thermistor(33, HALLUX_THERMISTOR_ID);
+    thermistorArr[0] = new Thermistor(25, 1);
+    thermistorArr[1] = new Thermistor(33, 2);
+    thermistorArr[2] = new Thermistor(32, 3);
+    thermistorArr[3] = new Thermistor(34, 4);
 
     // Create FSR objects
     fsrArr[0] = new FSR(13, 1);
@@ -55,10 +56,8 @@ void setup() {
     fsrArr[3] = new FSR(27, 4);
 
     // Initialize SPO2 objects
-    // for (int i = 0; i < NUM_SPO2; i++) {
-    //     spo2Arr[i] = new SPO2(SPO2_ID, 4, 5);
-    //     spo2Arr[i]->init(Wire);
-    // }
+    spo2Arr[0] = new SPO2(1, 4, 5);
+    spo2Arr[0]->init(Wire);
 
     // Create LED objects
     bleLed = new LED(2);
@@ -105,12 +104,11 @@ void loop() {
     // if (bleManager->getIsDeviceConnected()) {
     // bleLed->turnOn();
 
-    // readAndEncodeThermistorData();
+    readAndEncodeThermistorData();
+    Serial.println(" ");
     readAndEncodeFSRData();
-    // readAndEncodeSPO2Data();
-    // for (int i = 0; i < sizeof(spo2ByteArr); i++) {
-    //     Serial.print(spo2ByteArr[i]);
-    // }
+    Serial.println(" ");
+    readAndEncodeSPO2Data();
     Serial.println(" ");
     Serial.println(" ");
     thermistorCharacteristic->setValue(thermistorByteArr, sizeof(thermistorByteArr));

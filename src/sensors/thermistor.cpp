@@ -17,12 +17,14 @@ int Thermistor::getId() {
  */
 float Thermistor::readTemperature() {
     int adcVoltage = this->readFromADC();
-    Serial.print("ADC val: ");
-    Serial.println(float(adcVoltage));
     float thermistorVoltage = this->fromADCReadingToVoltage(float(adcVoltage));
     float thermistorResistance = this->fromVoltageToResistance(thermistorVoltage);
     float celsiusValue = this->fromResistanceToCelsiusUsingLookupTable(thermistorResistance);
 
+    Serial.print("Thermistor temp ");
+    Serial.print(this->id);
+    Serial.print(" : ");
+    Serial.println(celsiusValue);
     // round to nearest 10th decimal place
     celsiusValue = round(celsiusValue * 10) / 10;
 
@@ -71,7 +73,6 @@ float Thermistor::fromResistanceToCelsius(float resistance) {
     float R0 = 10000;  // thermistor resistance at T0 (usually 10k ohms)
 
     // Get kelvin temp value
-    // float tempInKelvin = 1 / ((1 / T0) + ((1 / B) * log(resistance / R0)));
     float tempInKelvin = 1 / (0.001417214376 + 0.0001863455008 * log(resistance) + (0.0000003447468826 * pow(log(resistance), 3)));
 
     // convert kelvin to celsius
