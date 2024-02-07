@@ -10,7 +10,7 @@
 #include <Wire.h>
 
 #define NUM_THERMISTORS 3
-#define NUM_FSR 2
+#define NUM_FSR 4
 #define NUM_SPO2 1
 #define BYTES_PER_SENSOR 5 // For byte array (1 byte for sensor id, 4 bytes for temp value)
 
@@ -49,14 +49,16 @@ void setup() {
     thermistorArr[2] = new Thermistor(33, HALLUX_THERMISTOR_ID);
 
     // Create FSR objects
-    fsrArr[0] = new FSR(32, METATARSAL_1_FSR_ID);
-    fsrArr[1] = new FSR(34, METATARSAL_2_FSR_ID);
+    fsrArr[0] = new FSR(13, 1);
+    fsrArr[1] = new FSR(12, 2);
+    fsrArr[2] = new FSR(14, 3);
+    fsrArr[3] = new FSR(27, 4);
 
     // Initialize SPO2 objects
-    for (int i = 0; i < NUM_SPO2; i++) {
-        spo2Arr[i] = new SPO2(SPO2_ID, 4, 5);
-        spo2Arr[i]->init(Wire);
-    }
+    // for (int i = 0; i < NUM_SPO2; i++) {
+    //     spo2Arr[i] = new SPO2(SPO2_ID, 4, 5);
+    //     spo2Arr[i]->init(Wire);
+    // }
 
     // Create LED objects
     bleLed = new LED(2);
@@ -100,28 +102,28 @@ void readAndEncodeSPO2Data() {
 }
 
 void loop() {
-    if (bleManager->getIsDeviceConnected()) {
-        bleLed->turnOn();
+    // if (bleManager->getIsDeviceConnected()) {
+    // bleLed->turnOn();
 
-        readAndEncodeThermistorData();
-        readAndEncodeFSRData();
-        readAndEncodeSPO2Data();
-        for (int i = 0; i < sizeof(spo2ByteArr); i++) {
-            Serial.print(spo2ByteArr[i]);
-        }
-        Serial.println(" ");
-        Serial.println(" ");
-        thermistorCharacteristic->setValue(thermistorByteArr, sizeof(thermistorByteArr));
-        thermistorCharacteristic->notify();
-        fsrCharacteristic->setValue(fsrByteArr, sizeof(fsrByteArr));
-        fsrCharacteristic->notify();
-        spo2Characteristic->setValue(spo2ByteArr, sizeof(spo2ByteArr));
-        spo2Characteristic->notify();
-    } else {
-        bleLed->turnOff();
-        delay(500);
-        bleLed->turnOn();
-        delay(300);
-    }
-    delay(1000);
+    // readAndEncodeThermistorData();
+    readAndEncodeFSRData();
+    // readAndEncodeSPO2Data();
+    // for (int i = 0; i < sizeof(spo2ByteArr); i++) {
+    //     Serial.print(spo2ByteArr[i]);
+    // }
+    Serial.println(" ");
+    Serial.println(" ");
+    thermistorCharacteristic->setValue(thermistorByteArr, sizeof(thermistorByteArr));
+    thermistorCharacteristic->notify();
+    fsrCharacteristic->setValue(fsrByteArr, sizeof(fsrByteArr));
+    fsrCharacteristic->notify();
+    spo2Characteristic->setValue(spo2ByteArr, sizeof(spo2ByteArr));
+    spo2Characteristic->notify();
+    // } else {
+    //     bleLed->turnOff();
+    //     delay(500);
+    //     bleLed->turnOn();
+    //     delay(300);
+    // }
+    delay(200);
 }

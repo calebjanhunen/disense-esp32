@@ -26,19 +26,19 @@ void SPO2::init(TwoWire &wire) {
     // Set pulse width.
     // Higher pulse width = longer light emission duration
     // light can penetrate deeper into the skin
-    int error = bioHub.setPulseWidth(width);
-    if (error == 0) { // Zero errors.
-        Serial.println("Pulse Width Set.");
-    } else {
-        Serial.println("Could not set Pulse Width.");
-        Serial.print("Error: ");
-        Serial.println(error);
-    }
+    // int error = bioHub.setPulseWidth(width);
+    // if (error == 0) { // Zero errors.
+    //     Serial.println("Pulse Width Set.");
+    // } else {
+    //     Serial.println("Could not set Pulse Width.");
+    //     Serial.print("Error: ");
+    //     Serial.println(error);
+    // }
 
-    // Check that the pulse width was set.
-    pulseWidthVal = bioHub.readPulseWidth();
-    Serial.print("Pulse Width: ");
-    Serial.println(pulseWidthVal);
+    // // Check that the pulse width was set.
+    // pulseWidthVal = bioHub.readPulseWidth();
+    // Serial.print("Pulse Width: ");
+    // Serial.println(pulseWidthVal);
 
     Serial.println("Loading up the buffer with data....");
     delay(4000);
