@@ -69,3 +69,7 @@ void BLEManager::startAdvertising() {
 bool BLEManager::getIsDeviceConnected() {
     return this->serverCallbacks->deviceConnected;
 }
+
+void BLEManager::bleShutDown() {
+    BLEDevice::deinit();
+}

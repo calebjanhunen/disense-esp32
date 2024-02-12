@@ -22,7 +22,15 @@ float Thermistor::readTemperature() {
     float celsiusValue = this->fromResistanceToCelsiusUsingLookupTable(thermistorResistance);
 
     Serial.print("Thermistor temp ");
-    Serial.print(this->id);
+    if (this->id == 1) {
+        Serial.print("Metatarsal 1");
+    } else if (this->id == 2) {
+        Serial.print("Metatarsal 5");
+    } else if (this->id == 3) {
+        Serial.print("Heel");
+    } else if (this->id == 4) {
+        Serial.print("Big toe");
+    }
     Serial.print(" : ");
     Serial.println(celsiusValue);
     // round to nearest 10th decimal place

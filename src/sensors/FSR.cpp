@@ -19,22 +19,19 @@ float FSR::readForce() {
     float voltage = this->fromADCValToVoltage(fsrADC);
     float resistance = this->fromVoltageToResistance(voltage);
     float force = this->fromResistanceToNewtonsUsing1kResistor(resistance);
-    // float force = this->fromResistanceToNewtonsUsing10kResistor(resistance);
 
-    // Serial.print("FSR voltage: ");
-    // Serial.println(voltage);
-    // Serial.print("FSR resistance: ");
-    // Serial.println(resistance);
     Serial.print("FSR force ");
-    Serial.print(this->id);
+    if (this->id == 1) {
+        Serial.print("Metatarsal 1");
+    } else if (this->id == 2) {
+        Serial.print("Metatarsal 5");
+    } else if (this->id == 3) {
+        Serial.print("Heel");
+    } else if (this->id == 4) {
+        Serial.print("Big toe");
+    }
     Serial.print(" : ");
     Serial.println(force);
-    // Serial.print("FSR weight in kg: ");
-    // float kg = force / 9.81;
-    // Serial.println(kg);
-    // float kpa = (kg / 169.4) * 0.00010197162129779
-    // Serial.print("FSR pressure in kPa: ");
-    // Serial.println(force / 1)    ;
 
     return round(force * 10) / 10;
 }

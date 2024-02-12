@@ -23,6 +23,7 @@ public:
     void startAdvertising();
     BLECharacteristic *createBLECharacteristicForNotify(const char *characteristicUuid);
     bool getIsDeviceConnected();
+    void bleShutDown();
 };
 
 #endif

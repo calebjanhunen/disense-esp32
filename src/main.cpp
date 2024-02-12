@@ -37,11 +37,12 @@ const long bleTransmissionInterval = 2000; // Interval for sending data over BLE
 unsigned long prevMillis = 0;              // Stores last time ble tranmission was executed
 
 void setup() {
-    Wire.begin();
     Serial.begin(115200);
+    Wire.begin();
+    Serial.println("ESP32 awake");
 
     // Create BLE manager object
-    bleManager = new BLEManager("Disense");
+    bleManager = new BLEManager("Disense-1");
 
     // Create thermistor objects
     thermistorArr[0] = new Thermistor(25, 1);
@@ -117,11 +118,17 @@ void loop() {
         fsrCharacteristic->notify();
         spo2Characteristic->setValue(spo2ByteArr, sizeof(spo2ByteArr));
         spo2Characteristic->notify();
+
+        delay(2000);
+        Serial.println("Going to deep sleep");
+        bleManager->bleShutDown();
+        esp_sleep_enable_timer_wakeup(9 * 1000000);
+        esp_deep_sleep_start();
     } else {
         bleLed->turnOff();
         delay(500);
         bleLed->turnOn();
         delay(300);
     }
-    delay(1000);
+    // delay(1000);
 }
