@@ -1,20 +1,24 @@
 #ifndef MyCharacteristicCallbacks_H
 #define MyCharacteristicCallbacks_H
 
-#include "BLEManager.h"
+#include "BLEuuids.h"
 #include <Arduino.h>
 #include <BLECharacteristic.h>
+#include <Base64.h>
+#include <Wstring.h>
 
-class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
+typedef void (*Callback)();
+
+class AckCallback : public BLECharacteristicCallbacks {
 private:
     bool ack1;
     bool ack2;
     bool ack3;
-    BLEManager *bleManager;
-    void resetAcknowledgments();
+    Callback deepSleepCallback;
+    void resetAcks();
 
 public:
-    MyCharacteristicCallbacks(BLEManager *bleManager);
+    AckCallback(Callback deepSleepCallback);
     void onWrite(BLECharacteristic *pCharacteristic);
 };
 

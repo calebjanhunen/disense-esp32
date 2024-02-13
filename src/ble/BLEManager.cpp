@@ -4,9 +4,10 @@
  * @brief Initialize BLEManager and create the device, server and service
  * @param [in] deviceName - The name of the BLE device
  */
-BLEManager::BLEManager(std::string deviceName) {
+BLEManager::BLEManager(std::string deviceName, DeepSleepCallback deepSleepCallback) {
     BLEDevice::init(deviceName);
     this->serverCallbacks = new MyServerCallbacks();
+    this->ackCallback = new AckCallback(deepSleepCallback);
     this->createBLEServer();
     this->createBLEService();
 }
@@ -39,6 +40,15 @@ BLECharacteristic *BLEManager::createBLECharacteristicForNotify(const char *char
     // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
     // Create a BLE Descriptor
     characteristic->addDescriptor(new BLE2902());
+
+    return characteristic;
+}
+
+BLECharacteristic *BLEManager::createCharacteristicForWrite(const char *characteristicUuid) {
+    BLECharacteristic *characteristic = this->service->createCharacteristic(
+        characteristicUuid,
+        BLECharacteristic::PROPERTY_WRITE);
+    characteristic->setCallbacks(this->ackCallback);
 
     return characteristic;
 }
