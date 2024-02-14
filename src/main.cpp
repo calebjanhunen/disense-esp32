@@ -36,12 +36,15 @@ uint8_t spo2ByteArr[NUM_SPO2 * BYTES_PER_SENSOR];
 const long bleTransmissionInterval = 2000; // Interval for sending data over BLE (2 seconds)
 unsigned long prevMillis = 0;              // Stores last time ble tranmission was executed
 
-void deepSleep() {
-    Serial.println("Going to deep sleep");
-    bleManager->bleShutDown();
-    esp_sleep_enable_timer_wakeup(9 * 1000000);
-    esp_deep_sleep_start();
-}
+// void deepSleep() {
+//     Serial.println("Going to deep sleep");
+//     bleManager->bleShutDown();
+//     Serial.println("BLE shut down");
+//     esp_sleep_enable_timer_wakeup(9 * 1000000);
+//     Serial.println("Timer set up");
+//     esp_deep_sleep_start();
+//     Serial.println("This should never print");
+// }
 
 void setup() {
     Serial.begin(115200);
@@ -49,7 +52,7 @@ void setup() {
     Serial.println("ESP32 awake");
 
     // Create BLE manager object
-    bleManager = new BLEManager("Disense-1", deepSleep);
+    bleManager = new BLEManager("Disense-1");
 
     // Create thermistor objects
     thermistorArr[0] = new Thermistor(25, 1);
@@ -74,7 +77,7 @@ void setup() {
     thermistorCharacteristic = bleManager->createBLECharacteristicForNotify(THERMISTORS_CHARACTERISTIC_UUID);
     fsrCharacteristic = bleManager->createBLECharacteristicForNotify(FSR_CHARACTERISTIC_UUID);
     spo2Characteristic = bleManager->createBLECharacteristicForNotify(SPO2_CHARACTERISTIC_UUID);
-    bleManager->createCharacteristicForWrite(ACKNOWLEDGMENT_CHARACTERISTIC_UUID); // 1b384bed-4282-41e1-8ef9-466bc94fa5ed
+    bleManager->createCharacteristicForWrite(ACKNOWLEDGMENT_CHARACTERISTIC_UUID);
 
     bleManager->startService();
     bleManager->startAdvertising();
@@ -127,13 +130,22 @@ void loop() {
         spo2Characteristic->setValue(spo2ByteArr, sizeof(spo2ByteArr));
         spo2Characteristic->notify();
 
-        // delay(2000);
-
+        if (bleManager->ackCallback->ack1 && bleManager->ackCallback->ack2) {
+            // Serial.println("ALL acknowledgments received");
+            Serial.println("Going to deep sleep");
+            bleManager->bleShutDown();
+            Serial.println("BLE shut down");
+            esp_sleep_enable_timer_wakeup(9 * 1000000);
+            Serial.println("Timer set up");
+            esp_deep_sleep_start();
+            Serial.println("This should never print");
+        }
+        delay(2000);
     } else {
         bleLed->turnOff();
         delay(500);
         bleLed->turnOn();
         delay(300);
     }
-    // delay(1000);
+    // delay(2000);
 }

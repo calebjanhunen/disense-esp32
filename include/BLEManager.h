@@ -17,12 +17,12 @@ private:
     BLEServer *server;
     BLEService *service;
     MyServerCallbacks *serverCallbacks;
-    AckCallback *ackCallback;
     void createBLEServer();
     void createBLEService();
 
 public:
-    BLEManager(std::string deviceName, DeepSleepCallback deepSleepCallback);
+    BLEManager(std::string deviceName);
+    AckCallback *ackCallback;
     void startService();
     void startAdvertising();
     BLECharacteristic *createBLECharacteristicForNotify(const char *characteristicUuid);

@@ -4,10 +4,10 @@
  * @brief Initialize BLEManager and create the device, server and service
  * @param [in] deviceName - The name of the BLE device
  */
-BLEManager::BLEManager(std::string deviceName, DeepSleepCallback deepSleepCallback) {
+BLEManager::BLEManager(std::string deviceName) {
     BLEDevice::init(deviceName);
     this->serverCallbacks = new MyServerCallbacks();
-    this->ackCallback = new AckCallback(deepSleepCallback);
+    this->ackCallback = new AckCallback();
     this->createBLEServer();
     this->createBLEService();
 }
