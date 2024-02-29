@@ -13,6 +13,7 @@ private:
 
 public:
     void resetAcks();
+    bool allAcknowledgmentsRecevied();
     AckCallback();
     bool ack1;
     bool ack2;

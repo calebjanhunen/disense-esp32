@@ -19,6 +19,8 @@ public:
     void init(TwoWire &wire);
     bioData readSensor();
     int getId();
+    int status;
+    int oxygen;
 };
 
 #endif

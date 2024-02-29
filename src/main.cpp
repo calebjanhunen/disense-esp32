@@ -36,20 +36,13 @@ uint8_t spo2ByteArr[NUM_SPO2 * BYTES_PER_SENSOR];
 const long bleTransmissionInterval = 2000; // Interval for sending data over BLE (2 seconds)
 unsigned long prevMillis = 0;              // Stores last time ble tranmission was executed
 
-// void deepSleep() {
-//     Serial.println("Going to deep sleep");
-//     bleManager->bleShutDown();
-//     Serial.println("BLE shut down");
-//     esp_sleep_enable_timer_wakeup(9 * 1000000);
-//     Serial.println("Timer set up");
-//     esp_deep_sleep_start();
-//     Serial.println("This should never print");
-// }
+unsigned long startTime;
 
 void setup() {
     Serial.begin(115200);
     Wire.begin();
     Serial.println("ESP32 awake");
+    startTime = millis();
 
     // Create BLE manager object
     bleManager = new BLEManager("Disense-1");
@@ -67,8 +60,8 @@ void setup() {
     fsrArr[3] = new FSR(27, 4);
 
     // Initialize SPO2 objects
-    // spo2Arr[0] = new SPO2(1, 4, 5);
-    // spo2Arr[0]->init(Wire);
+    spo2Arr[0] = new SPO2(1, 4, 5);
+    spo2Arr[0]->init(Wire);
 
     // Create LED objects
     bleLed = new LED(2);
@@ -90,7 +83,6 @@ void readAndEncodeThermistorData() {
         encodeDataToByteArr(temp, thermistorArr[i]->getId(), &thermistorByteArr[byteArrIndex]);
         byteArrIndex += BYTES_PER_SENSOR;
     }
-    Serial.println(" ");
 }
 
 void readAndEncodeFSRData() {
@@ -100,7 +92,6 @@ void readAndEncodeFSRData() {
         encodeDataToByteArr(force, fsrArr[i]->getId(), &fsrByteArr[byteArrIndex]);
         byteArrIndex += BYTES_PER_SENSOR;
     }
-    Serial.println(" ");
 }
 
 void readAndEncodeSPO2Data() {
@@ -113,34 +104,45 @@ void readAndEncodeSPO2Data() {
 }
 
 void loop() {
+    readAndEncodeSPO2Data();
     if (bleManager->getIsDeviceConnected()) {
         bleLed->turnOn();
 
         readAndEncodeThermistorData();
-        Serial.println(" ");
         readAndEncodeFSRData();
         Serial.println(" ");
-        // readAndEncodeSPO2Data();
-        // Serial.println(" ");
-        Serial.println(" ");
-        thermistorCharacteristic->setValue(thermistorByteArr, sizeof(thermistorByteArr));
-        thermistorCharacteristic->notify();
-        fsrCharacteristic->setValue(fsrByteArr, sizeof(fsrByteArr));
-        fsrCharacteristic->notify();
-        spo2Characteristic->setValue(spo2ByteArr, sizeof(spo2ByteArr));
-        spo2Characteristic->notify();
+        if (!bleManager->ackCallback->ack1) {
+            thermistorCharacteristic->setValue(thermistorByteArr, sizeof(thermistorByteArr));
+            thermistorCharacteristic->notify();
+        }
+
+        if (!bleManager->ackCallback->ack2) {
+            fsrCharacteristic->setValue(fsrByteArr, sizeof(fsrByteArr));
+            fsrCharacteristic->notify();
+        }
+
+        if (!bleManager->ackCallback->ack3 && spo2Arr[0]->status == 3 && spo2Arr[0]->oxygen != 0) {
+            spo2Characteristic->setValue(spo2ByteArr, sizeof(spo2ByteArr));
+            spo2Characteristic->notify();
+        }
+        delay(200);
 
         if (bleManager->ackCallback->ack1 && bleManager->ackCallback->ack2) {
-            // Serial.println("ALL acknowledgments received");
-            Serial.println("Going to deep sleep");
-            bleManager->bleShutDown();
-            Serial.println("BLE shut down");
-            esp_sleep_enable_timer_wakeup(9 * 1000000);
-            Serial.println("Timer set up");
-            esp_deep_sleep_start();
-            Serial.println("This should never print");
+            if (bleManager->ackCallback->ack3 || millis() >= 10000) {
+
+                Serial.println(millis());
+                Serial.println("Going to deep sleep");
+                // bleManager->serverCallbacks->deviceConnected = false;
+                // Serial.println("ALL acknowledgments received");
+                // bleManager->ackCallback->resetAcks();
+                bleManager->bleShutDown();
+                esp_sleep_enable_timer_wakeup(9 * 1000000);
+                esp_deep_sleep_start();
+                Serial.println("AWAKE from light sleep");
+                // esp_light_sleep_start();
+            }
         }
-        delay(2000);
+        // delay(2000);
     } else {
         bleLed->turnOff();
         delay(500);

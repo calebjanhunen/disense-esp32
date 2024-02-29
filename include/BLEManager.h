@@ -16,11 +16,11 @@ class BLEManager {
 private:
     BLEServer *server;
     BLEService *service;
-    MyServerCallbacks *serverCallbacks;
     void createBLEServer();
     void createBLEService();
 
 public:
+    MyServerCallbacks *serverCallbacks;
     BLEManager(std::string deviceName);
     AckCallback *ackCallback;
     void startService();

@@ -4,6 +4,8 @@ SPO2::SPO2(int id, int reset, int mfio) {
     this->mfioPin = mfio;
     this->resPin = reset;
     this->id = id;
+    this->status = 0;
+    this->oxygen = 0;
 }
 
 int SPO2::getId() {
@@ -14,7 +16,7 @@ void SPO2::init(TwoWire &wire) {
     this->startSensor(wire);
     this->configureSensor();
 
-    // Possible widths: 69, 118, 215, 411us
+    // Possible widths: 69, 118, 215,
     int width = 411;
     // Possible samples: 50, 100, 200, 400, 800, 1000, 1600, 3200 samples/second
     // Not every sample amount is possible with every width; check out our hookup
@@ -26,22 +28,22 @@ void SPO2::init(TwoWire &wire) {
     // Set pulse width.
     // Higher pulse width = longer light emission duration
     // light can penetrate deeper into the skin
-    // int error = bioHub.setPulseWidth(width);
-    // if (error == 0) { // Zero errors.
-    //     Serial.println("Pulse Width Set.");
-    // } else {
-    //     Serial.println("Could not set Pulse Width.");
-    //     Serial.print("Error: ");
-    //     Serial.println(error);
-    // }
+    int error = bioHub.setPulseWidth(width);
+    if (error == 0) { // Zero errors.
+        Serial.println("Pulse Width Set.");
+    } else {
+        Serial.println("Could not set Pulse Width.");
+        Serial.print("Error: ");
+        Serial.println(error);
+    }
 
-    // // Check that the pulse width was set.
-    // pulseWidthVal = bioHub.readPulseWidth();
-    // Serial.print("Pulse Width: ");
-    // Serial.println(pulseWidthVal);
+    // Check that the pulse width was set.
+    pulseWidthVal = bioHub.readPulseWidth();
+    Serial.print("Pulse Width: ");
+    Serial.println(pulseWidthVal);
 
     Serial.println("Loading up the buffer with data....");
-    delay(4000);
+    // delay(1000);
 }
 
 bioData SPO2::readSensor() {
@@ -52,6 +54,8 @@ bioData SPO2::readSensor() {
     Serial.println(body.oxygen);
     Serial.print("Status: ");
     Serial.println(body.status);
+    this->status = body.status;
+    this->oxygen = body.oxygen;
     return body;
 }
 
