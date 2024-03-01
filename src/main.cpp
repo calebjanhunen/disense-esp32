@@ -36,13 +36,13 @@ uint8_t spo2ByteArr[NUM_SPO2 * BYTES_PER_SENSOR];
 const long bleTransmissionInterval = 2000; // Interval for sending data over BLE (2 seconds)
 unsigned long prevMillis = 0;              // Stores last time ble tranmission was executed
 
-unsigned long startTime;
+unsigned long prevTime;
 
 void setup() {
     Serial.begin(115200);
     Wire.begin();
     Serial.println("ESP32 awake");
-    startTime = millis();
+    prevTime = millis();
 
     // Create BLE manager object
     bleManager = new BLEManager("Disense-1");
@@ -106,43 +106,25 @@ void readAndEncodeSPO2Data() {
 void loop() {
     readAndEncodeSPO2Data();
     if (bleManager->getIsDeviceConnected()) {
+        unsigned long currTime = millis();
         bleLed->turnOn();
 
         readAndEncodeThermistorData();
         readAndEncodeFSRData();
         Serial.println(" ");
-        if (!bleManager->ackCallback->ack1) {
+        Serial.print("Time: ");
+        Serial.println(currTime - prevTime);
+        if (currTime - prevTime >= 5000) {
+            prevTime = currTime;
+            Serial.println("Send BLE");
             thermistorCharacteristic->setValue(thermistorByteArr, sizeof(thermistorByteArr));
             thermistorCharacteristic->notify();
-        }
-
-        if (!bleManager->ackCallback->ack2) {
             fsrCharacteristic->setValue(fsrByteArr, sizeof(fsrByteArr));
             fsrCharacteristic->notify();
-        }
-
-        if (!bleManager->ackCallback->ack3 && spo2Arr[0]->status == 3 && spo2Arr[0]->oxygen != 0) {
             spo2Characteristic->setValue(spo2ByteArr, sizeof(spo2ByteArr));
             spo2Characteristic->notify();
         }
         delay(200);
-
-        if (bleManager->ackCallback->ack1 && bleManager->ackCallback->ack2) {
-            if (bleManager->ackCallback->ack3 || millis() >= 10000) {
-
-                Serial.println(millis());
-                Serial.println("Going to deep sleep");
-                // bleManager->serverCallbacks->deviceConnected = false;
-                // Serial.println("ALL acknowledgments received");
-                // bleManager->ackCallback->resetAcks();
-                bleManager->bleShutDown();
-                esp_sleep_enable_timer_wakeup(9 * 1000000);
-                esp_deep_sleep_start();
-                Serial.println("AWAKE from light sleep");
-                // esp_light_sleep_start();
-            }
-        }
-        // delay(2000);
     } else {
         bleLed->turnOff();
         delay(500);
