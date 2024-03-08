@@ -105,31 +105,31 @@ void readAndEncodeSPO2Data() {
 
 void loop() {
     readAndEncodeSPO2Data();
-    if (bleManager->getIsDeviceConnected()) {
-        unsigned long currTime = millis();
-        bleLed->turnOn();
+    // if (bleManager->getIsDeviceConnected()) {
+    unsigned long currTime = millis();
+    bleLed->turnOn();
 
-        readAndEncodeThermistorData();
-        readAndEncodeFSRData();
-        Serial.println(" ");
-        Serial.print("Time: ");
-        Serial.println(currTime - prevTime);
-        if (currTime - prevTime >= 5000) {
-            prevTime = currTime;
-            Serial.println("Send BLE");
-            thermistorCharacteristic->setValue(thermistorByteArr, sizeof(thermistorByteArr));
-            thermistorCharacteristic->notify();
-            fsrCharacteristic->setValue(fsrByteArr, sizeof(fsrByteArr));
-            fsrCharacteristic->notify();
-            spo2Characteristic->setValue(spo2ByteArr, sizeof(spo2ByteArr));
-            spo2Characteristic->notify();
-        }
-        delay(200);
-    } else {
-        bleLed->turnOff();
-        delay(500);
-        bleLed->turnOn();
-        delay(300);
-    }
+    readAndEncodeThermistorData();
+    readAndEncodeFSRData();
+    // Serial.println(" ");
+    // Serial.print("Time: ");
+    // Serial.println(currTime - prevTime);
+    // if (currTime - prevTime >= 5000) {
+    //     prevTime = currTime;
+    //     Serial.println("Send BLE");
+    //     thermistorCharacteristic->setValue(thermistorByteArr, sizeof(thermistorByteArr));
+    //     thermistorCharacteristic->notify();
+    //     fsrCharacteristic->setValue(fsrByteArr, sizeof(fsrByteArr));
+    //     fsrCharacteristic->notify();
+    //     spo2Characteristic->setValue(spo2ByteArr, sizeof(spo2ByteArr));
+    //     spo2Characteristic->notify();
+    // }
+    delay(200);
+    // } else {
+    //     bleLed->turnOff();
+    //     delay(500);
+    //     bleLed->turnOn();
+    //     delay(300);
+    // }
     // delay(2000);
 }
